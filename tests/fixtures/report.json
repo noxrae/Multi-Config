@@ -1,0 +1,79 @@
+{
+  "suites": [
+    {
+      "title": "root",
+      "suites": [
+        {
+          "title": "auth",
+          "specs": [
+            {
+              "title": "login spec",
+              "tests": [
+                {
+                  "title": "w01_login_pass",
+                  "projectName": "chromium",
+                  "status": "passed",
+                  "results": [
+                    {
+                      "status": "passed",
+                      "steps": [
+                        {
+                          "title": "Before Hooks",
+                          "status": "passed"
+                        },
+                        {
+                          "title": "Fill credentials",
+                          "status": "passed",
+                          "steps": [
+                            {
+                              "title": "Type username",
+                              "status": "passed"
+                            },
+                            {
+                              "title": "Type password",
+                              "status": "passed"
+                            }
+                          ]
+                        },
+                        {
+                          "title": "After Hooks",
+                          "status": "skipped"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "checkout",
+          "specs": [
+            {
+              "title": "cart spec",
+              "tests": [
+                {
+                  "title": "w02_checkout_fail",
+                  "projectName": "firefox",
+                  "status": "failed",
+                  "results": [
+                    {
+                      "status": "failed",
+                      "steps": [
+                        {
+                          "title": "Navigate to cart",
+                          "status": "passed"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

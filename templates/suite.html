@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nova Suite | Unified Mission Control</title>
+  <link rel="stylesheet" href="/static/suite.css?v=2.0" />
+</head>
+<body class="deep-space">
+  <div class="galaxy-bg"></div>
+  <div class="star-layer stars-1"></div>
+  <div class="star-layer stars-2"></div>
+  <div class="star-layer stars-3"></div>
+
+  <nav class="celestial-nav">
+    <div class="container nav-flex">
+      <div class="nav-brand">NOVA SYSTEM</div>
+      <div class="nav-tabs">
+        <button id="nav-normalizer" class="nav-btn active" onclick="showTab('normalizer')">Report Normalizer</button>
+        <button id="nav-config" class="nav-btn" onclick="showTab('config')">Config Generator</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Info Modal -->
+  <div id="infoOverlay" class="overlay">
+    <div class="modal">
+      <div class="modal-close" onclick="closeModal('infoOverlay')">✖</div>
+      <h3 class="modal-title">Mission Protocol</h3>
+      <div class="modal-content">
+        <p><b>1. NORMALIZER:</b> Drop Playwright ZIP artifacts to extract structured test data.</p>
+        <br>
+        <p><b>2. SCANNER:</b> Convert raw terminal logs into a clean, searchable JSON matrix.</p>
+        <br>
+        <p><b>3. WEIGHTAGE:</b> Calibrate balanced execution distributions for CI optimization.</p>
+      </div>
+      <button class="btn-ion" onclick="closeModal('infoOverlay')" style="margin-top:2rem;">Acknowledge</button>
+    </div>
+  </div>
+
+  <!-- History Modal -->
+  <div id="historyOverlay" class="overlay">
+    <div class="modal">
+      <div class="modal-close" onclick="closeModal('historyOverlay')">✖</div>
+      <h3 class="modal-title">Celestial Archive</h3>
+      <div id="historyContent"></div>
+      <button class="btn-ion" onclick="closeModal('historyOverlay')" style="margin-top:2rem;">Close Archives</button>
+    </div>
+  </div>
+
+  <div class="app-container">
+    <header class="app-header">
+      <div class="container">
+        <div class="brand-orbit">
+          <div class="planet-ring"></div>
+          <div class="planet-3d">
+            <div class="surface"></div>
+            <div class="clouds"></div>
+            <div class="glow"></div>
+          </div>
+          <div class="satellite"></div>
+        </div>
+        <h1>Nova</h1>
+        <p class="tagline">Galaxy-Scale Data Transformation</p>
+      </div>
+    </header>
+
+    <main class="container">
+      
+      <!-- --- SECTION: REPORT NORMALIZER --- -->
+      <div id="section-normalizer" class="dashboard-grid">
+        <aside>
+          <section class="glass-card">
+            <div class="card-title">Launch Protocol</div>
+            <form onsubmit="event.preventDefault(); startNormalizer();">
+              <label class="ion-dropzone" for="zipInput">
+                <input id="zipInput" type="file" accept=".zip" required />
+                <div class="ion-icon">🌌</div>
+                <span class="ion-label">Transmit Artifact</span>
+                <span class="ion-sub">Target: report.zip</span>
+              </label>
+              <button id="startBtn" type="submit" class="btn-ion">Initiate Warp</button>
+            </form>
+            <p id="formMsg" style="text-align:center; font-size:0.75rem; color:var(--ion-cyan); margin-top:1rem; font-weight:700;">STATION: READY</p>
+          </section>
+
+          <section class="glass-card">
+            <div class="card-title">
+              Mission Status
+              <span id="statusBadge" class="badge-celestial idle">Parked</span>
+            </div>
+            <div class="progress-meta">
+              <span id="phaseText">Sector: -</span>
+              <span id="countText">0%</span>
+            </div>
+            <div class="energy-track"><div id="meterBar" class="energy-bar"></div></div>
+            <p id="messageText" class="log-stream">Telemetry awaiting signal...</p>
+          </section>
+        </aside>
+
+        <article>
+          <section class="glass-card">
+            <div class="card-title">Discovery Data</div>
+            <div class="celestial-stats">
+              <div class="stat-orb"><span class="label">Total Tests</span><strong id="totalTests">0</strong></div>
+              <div class="stat-orb"><span class="label">Success</span><strong id="passedTests" style="color:var(--success);">0</strong></div>
+              <div class="stat-orb"><span class="label">Failed</span><strong id="failedTests" style="color:var(--danger);">0</strong></div>
+              <div class="stat-orb"><span class="label">Efficiency</span><strong id="passRate">0%</strong></div>
+              <div class="stat-orb full"><span class="label">Total Steps Extracted</span><strong id="totalSteps" style="color:var(--star-gold);">0</strong></div>
+            </div>
+            <div class="mission-actions">
+              <a id="downloadBtn" class="btn-ion disabled" style="background:var(--success); color:#000;" href="#">Recover Artifact</a>
+              <button id="previewBtn" class="btn-secondary" onclick="previewArtifact()" disabled>View Readout</button>
+            </div>
+          </section>
+
+          <section class="glass-card">
+            <div class="card-title">
+              <span>Artifact Readout</span>
+              <button id="copyMainBtn" class="btn-copy" onclick="copyToClipboard('jsonPreview', 'copyMainBtn')" disabled>Copy JSON</button>
+            </div>
+            <div class="hologram-console"><pre id="jsonPreview">// Transmission empty...</pre></div>
+          </section>
+        </article>
+      </div>
+
+      <!-- --- SECTION: CONFIG GENERATOR --- -->
+      <div id="section-config" style="display:none;">
+        <div class="config-header-hud">
+          <div class="tabs-container">
+            <div class="tabs">
+              <button id="tabParser" class="tab active" onclick="switchConfigTab('parser')">LOG SCANNER</button>
+              <button id="tabWeightage" class="tab" onclick="switchConfigTab('weightage')">WEIGHTAGE</button>
+              <button id="tabPythonWeightage" class="tab" onclick="switchConfigTab('python-weightage')">PYTHON WEIGHTAGE</button>
+            </div>
+          </div>
+          
+          <div id="strategyContainer" style="display:none;">
+            <select id="weightageStrategy" class="strategy-select">
+                <option value="equal">Equal (Sum 1.0)</option>
+                <option value="gradual">Gradual</option>
+                <option value="manual">Manual</option>
+                <option value="intelligent">Intelligent</option>
+            </select>
+          </div>
+
+          <div class="utility-controls">
+            <div class="icon-btn" title="Mission Briefing" onclick="openModal('infoOverlay')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            </div>
+            <div class="icon-btn" title="Celestial Archive" onclick="openHistory()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            </div>
+            <div class="stat-orb-mini">
+              <span class="label">Identified</span>
+              <strong id="configCount">00</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <section class="glass-card">
+            <div class="card-title">
+              <span id="inputLabel">Raw Input Terminal</span>
+              <button class="btn-copy" style="padding:0.2rem 0.6rem; border-radius:6px; width: auto;" onclick="document.getElementById('rawInput').value=''">Purge</button>
+            </div>
+            <textarea id="rawInput" class="input-area" placeholder="// Paste logs here..."></textarea>
+            <button id="configProcessBtn" class="btn-ion" onclick="processConfig()" style="margin-top:1.5rem;">Initiate Scan</button>
+          </section>
+
+          <section class="glass-card">
+            <div class="card-title">
+              <span>Output Matrix</span>
+              <button id="copyConfigBtn" class="btn-copy" onclick="copyToClipboard('configOutput', 'copyConfigBtn')">Copy JSON</button>
+            </div>
+            <div class="hologram-console"><pre id="configOutput">// Awaiting data transmission...</pre></div>
+            
+            <div id="reasoningContainer" style="display:none; margin-top: 1.5rem; border-top: 1px solid var(--glass-border); padding-top: 1.5rem;">
+                <div class="card-title" style="font-size: 0.8rem; color: var(--nebula-pink);">Intelligent Analysis</div>
+                <div id="reasoningContent" style="max-height: 300px; overflow-y: auto; padding-right: 0.5rem;"></div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+    </main>
+
+    <footer class="app-footer">
+      <div class="container">
+        <p>&copy; 2026 NOVA UNIFIED SYSTEM &bull; DATA TRANSFORMATION FRONTIER</p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="/static/suite.js?v=2.2"></script>
+</body>
+</html>
+
+
