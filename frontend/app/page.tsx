@@ -60,6 +60,8 @@ export default function Home() {
   const [historyData, setHistoryData] = useState<HistoryItem[]>([])
   const [reasoning, setReasoning] = useState<ReasoningItem[]>([])
   const [copiedButton, setCopiedButton] = useState<string | null>(null)
+  const [completedResult, setCompletedResult] = useState<unknown | null>(null)
+  const [downloadHref, setDownloadHref] = useState<string | null>(null)
 
   useEffect(() => {
     try {
@@ -97,6 +99,19 @@ export default function Home() {
     return () => clearInterval(interval)
   }, [jobId, progress.status])
 
+  useEffect(() => {
+    if (!completedResult) {
+      setDownloadHref(null)
+      return
+    }
+
+    const blob = new Blob([JSON.stringify(completedResult, null, 2)], { type: 'application/json' })
+    const href = URL.createObjectURL(blob)
+    setDownloadHref(href)
+
+    return () => URL.revokeObjectURL(href)
+  }, [completedResult])
+
   const progressPct = useMemo(() => {
     if (!progress.total_phases) return 0
     return (progress.current_phase / progress.total_phases) * 100
@@ -133,12 +148,31 @@ export default function Home() {
     setFormMsg('Launching Mission...')
     setPreviewReady(false)
     setJsonPreview('// Transmission empty...')
+    setCompletedResult(null)
     setProgress({ ...initialProgress, status: 'running', message: 'Launching Mission...' })
 
     try {
       const res = await fetch('/api/start', { method: 'POST', body: formData })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Upload failed')
+
+      if (data.status === 'completed' && data.result) {
+        setJobId(data.job_id)
+        setCompletedResult(data.result)
+        setJsonPreview(JSON.stringify(data.result, null, 2))
+        setProgress({
+          status: 'completed',
+          phase: 'Completed',
+          current_phase: 5,
+          total_phases: 5,
+          message: 'Normalization finished',
+          summary: data.summary || {},
+        })
+        setFormMsg('Mission Complete.')
+        setPreviewReady(true)
+        return
+      }
+
       setJobId(data.job_id)
     } catch (error: any) {
       setFormMsg(`Error: ${error.message}`)
@@ -147,6 +181,11 @@ export default function Home() {
   }
 
   const previewArtifact = async () => {
+    if (completedResult) {
+      setJsonPreview(JSON.stringify(completedResult, null, 2))
+      return
+    }
+
     if (!jobId) return
     try {
       const res = await fetch(`/api/result/${jobId}`)
@@ -356,7 +395,7 @@ export default function Home() {
                     <div className="stat-orb full"><span className="label">Total Steps Extracted</span><strong style={{ color: 'var(--star-gold)' }}>{progress.summary?.steps || 0}</strong></div>
                   </div>
                   <div className="mission-actions">
-                    <a className={`btn-ion ${!previewReady || !jobId ? 'disabled' : ''}`} style={{ background: 'var(--success)', color: '#000' }} href={jobId ? `/api/download/${jobId}` : '#'}>Recover Artifact</a>
+                    <a className={`btn-ion ${!previewReady || (!jobId && !downloadHref) ? 'disabled' : ''}`} style={{ background: 'var(--success)', color: '#000' }} href={downloadHref || (jobId ? `/api/download/${jobId}` : '#')} download={downloadHref ? 'normalized_report.json' : undefined}>Recover Artifact</a>
                     <button className="btn-secondary" onClick={previewArtifact} disabled={!previewReady}>View Readout</button>
                   </div>
                 </section>
@@ -460,6 +499,9 @@ export default function Home() {
     </>
   )
 }
+
+
+
 
 
 

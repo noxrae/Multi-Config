@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto'
+﻿import { randomUUID } from 'crypto'
 import { writeFile } from 'fs/promises'
 import { NextResponse } from 'next/server'
 import path from 'path'
@@ -9,11 +9,10 @@ import { ensureRuntimeDirs, uploadsDir } from '@/lib/server/runtime'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+export const maxDuration = 60
 
 export async function POST(req: Request): Promise<Response> {
   try {
-    await ensureRuntimeDirs()
-
     const formData = await req.formData()
     const file = formData.get('file')
     if (!(file instanceof File)) {
@@ -21,6 +20,35 @@ export async function POST(req: Request): Promise<Response> {
     }
 
     const jobId = randomUUID().replace(/-/g, '')
+
+    if (process.env.VERCEL) {
+      const normalizeForm = new FormData()
+      normalizeForm.append('file', file)
+
+      const normalizeUrl = new URL('/api/normalize', req.url)
+      const normalizeResponse = await fetch(normalizeUrl, {
+        method: 'POST',
+        body: normalizeForm,
+        cache: 'no-store',
+      })
+
+      const normalizeData = await normalizeResponse.json()
+      if (!normalizeResponse.ok) {
+        return NextResponse.json(
+          { error: normalizeData?.detail || normalizeData?.error || 'Normalization failed' },
+          { status: normalizeResponse.status || 500 },
+        )
+      }
+
+      return NextResponse.json({
+        job_id: jobId,
+        status: 'completed',
+        result: normalizeData.result,
+        summary: normalizeData.summary,
+      })
+    }
+
+    await ensureRuntimeDirs()
     const zipPath = path.join(uploadsDir, `${jobId}.zip`)
     const buffer = Buffer.from(await file.arrayBuffer())
 
