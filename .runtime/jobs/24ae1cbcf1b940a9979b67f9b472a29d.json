@@ -1,0 +1,18 @@
+{
+  "job_id": "24ae1cbcf1b940a9979b67f9b472a29d",
+  "status": "completed",
+  "phase": "Completed",
+  "current_phase": 5,
+  "total_phases": 5,
+  "message": "Normalization finished",
+  "created_at": "2026-03-22T17:38:38.544Z",
+  "updated_at": "2026-03-22T17:38:39.717454+00:00",
+  "output_file": "C:\\Users\\SanjayS\\Pictures\\playwright-json-normalizer\\output\\normalized_report_24ae1cbcf1b940a9979b67f9b472a29d.json",
+  "summary": {
+    "total": 25,
+    "passed": 25,
+    "failed": 0,
+    "steps": 194,
+    "pass_rate": 100.0
+  }
+}

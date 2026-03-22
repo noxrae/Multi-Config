@@ -314,7 +314,15 @@ export default function Home() {
                   <form onSubmit={handleFileUpload}>
                     <label className="ion-dropzone" htmlFor="zipInput">
                       <input id="zipInput" type="file" accept=".zip" required onChange={(event) => setFile(event.target.files?.[0] || null)} />
-                      <div className="ion-icon">*</div>
+                                            <div className="ion-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 16V7" />
+                          <path d="m8.5 10.5 3.5-3.5 3.5 3.5" />
+                          <path d="M4 17.5c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2" />
+                          <circle cx="18" cy="6" r="1.5" />
+                          <circle cx="6" cy="8" r="1" />
+                        </svg>
+                      </div>
                       <span className="ion-label">Transmit Artifact</span>
                       <span className="ion-sub">Target: report.zip</span>
                     </label>
@@ -452,4 +460,6 @@ export default function Home() {
     </>
   )
 }
+
+
 
