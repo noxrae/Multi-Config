@@ -1,0 +1,1 @@
+export { POST } from '../../../../frontend/app/api/config/weightage/route'
