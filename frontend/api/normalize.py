@@ -2,16 +2,11 @@
 
 import json
 import shutil
-import sys
 import tempfile
 from pathlib import Path
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
 
 from core.analytics import generate_analytics
 from core.builder import build_normalized_report
