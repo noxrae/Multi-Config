@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server'
 import path from 'path'
 
 import { createQueuedJob } from '@/lib/server/jobs'
+import { normalizeZipBuffer } from '@/lib/server/normalize'
 import { spawnNormalizationWorker } from '@/lib/server/python'
 import { ensureRuntimeDirs, uploadsDir } from '@/lib/server/runtime'
 
@@ -20,38 +21,20 @@ export async function POST(req: Request): Promise<Response> {
     }
 
     const jobId = randomUUID().replace(/-/g, '')
+    const buffer = Buffer.from(await file.arrayBuffer())
 
     if (process.env.VERCEL) {
-      const normalizeForm = new FormData()
-      normalizeForm.append('file', file)
-
-      const normalizeUrl = new URL('/api/normalize', req.url)
-      const normalizeResponse = await fetch(normalizeUrl, {
-        method: 'POST',
-        body: normalizeForm,
-        cache: 'no-store',
-      })
-
-      const normalizeData = await normalizeResponse.json()
-      if (!normalizeResponse.ok) {
-        return NextResponse.json(
-          { error: normalizeData?.detail || normalizeData?.error || 'Normalization failed' },
-          { status: normalizeResponse.status || 500 },
-        )
-      }
-
+      const normalized = await normalizeZipBuffer(buffer)
       return NextResponse.json({
         job_id: jobId,
         status: 'completed',
-        result: normalizeData.result,
-        summary: normalizeData.summary,
+        result: normalized.result,
+        summary: normalized.summary,
       })
     }
 
     await ensureRuntimeDirs()
     const zipPath = path.join(uploadsDir, `${jobId}.zip`)
-    const buffer = Buffer.from(await file.arrayBuffer())
-
     await writeFile(zipPath, buffer)
     await createQueuedJob(jobId)
     await spawnNormalizationWorker(jobId, zipPath)

@@ -1,7 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { spawn } from 'child_process'
+﻿import { NextRequest, NextResponse } from 'next/server'
 
-import { getPythonCommand, resolvePythonWeightageScript } from '@/lib/server/python'
+import { buildPythonWeightageOutput } from '@/lib/server/python-weightage'
 
 export const runtime = 'nodejs'
 
@@ -11,38 +10,8 @@ export async function POST(req: NextRequest): Promise<Response> {
     const strategy = body.strategy || 'equal'
 
     if (strategy === 'intelligent') {
-      const scriptPath = resolvePythonWeightageScript()
-
-      return await new Promise<Response>((resolve) => {
-        const python = spawn(getPythonCommand(), [scriptPath])
-        let dataString = ''
-        let errorString = ''
-
-        python.stdout.on('data', (data) => {
-          dataString += data.toString()
-        })
-
-        python.stderr.on('data', (data) => {
-          errorString += data.toString()
-        })
-
-        python.on('close', (code) => {
-          if (code !== 0) {
-            resolve(NextResponse.json({ error: errorString || 'Process exited with error' }, { status: 500 }))
-            return
-          }
-
-          try {
-            const result = JSON.parse(dataString)
-            resolve(NextResponse.json({ output: result.output }))
-          } catch {
-            resolve(NextResponse.json({ error: 'Failed to parse Python output' }, { status: 500 }))
-          }
-        })
-
-        python.stdin.write(JSON.stringify({ code: body.data, strategy }))
-        python.stdin.end()
-      })
+      const intelligentOutput = buildPythonWeightageOutput(body.data || '', strategy)
+      return NextResponse.json(intelligentOutput)
     }
 
     const tests = parsePythonTests(body.data || '')
